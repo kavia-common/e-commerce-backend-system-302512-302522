@@ -338,7 +338,13 @@ const envInfo = {
   MongoDB: 'MONGODB_URL, MONGODB_DB'
 };
 
-const PORT = process.env.PORT || 3000;
+/**
+ * NOTE:
+ * The platform may set PORT=3001 for the Express API container.
+ * To avoid port collisions, the DB viewer uses DB_VIEWER_PORT (default 3000)
+ * and ignores PORT unless DB_VIEWER_PORT is explicitly set.
+ */
+const PORT = process.env.DB_VIEWER_PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Database viewer running on http://localhost:${PORT}`);
   console.log('\nEnvironment variables expected:');
