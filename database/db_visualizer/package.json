@@ -4,11 +4,11 @@
   "description": "Simple database viewer for PostgreSQL, MySQL, SQLite, and MongoDB",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js --host 0.0.0.0",
-    "dev": "nodemon server.js"
+    "start": "DB_VIEWER_PORT=${DB_VIEWER_PORT:-3000} node server.js",
+    "dev": "DB_VIEWER_PORT=${DB_VIEWER_PORT:-3000} nodemon server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "express": "4.21.2",
     "pg": "^8.11.3",
     "mysql2": "^3.6.3",
     "sqlite3": "^5.1.6",
