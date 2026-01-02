@@ -25,6 +25,16 @@ app.use((req, res, next) => {
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
+/**
+ * Healthcheck endpoint for the container platform readiness probe.
+ * The platform expects an HTTP service on PORT (commonly 5001) and will probe
+ * HEALTHCHECK_PATH (commonly /healthz).
+ */
+const HEALTHCHECK_PATH = process.env.HEALTHCHECK_PATH || '/healthz';
+app.get(HEALTHCHECK_PATH, (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // Load environment variables from .env files
 function loadEnvFiles() {
   const envFiles = ['postgres', 'mysql', 'sqlite', 'mongodb'];
@@ -340,13 +350,17 @@ const envInfo = {
 
 /**
  * NOTE:
- * The platform may set PORT=3001 for the Express API container.
- * To avoid port collisions, the DB viewer uses DB_VIEWER_PORT (default 3000)
- * and ignores PORT unless DB_VIEWER_PORT is explicitly set.
+ * - The DB container platform typically sets PORT=5001 and probes /healthz.
+ * - The Express API container uses 3001. To avoid collisions, this viewer
+ *   prefers DB_VIEWER_PORT, but will fall back to PORT when running in the
+ *   database container environment.
  */
-const PORT = process.env.DB_VIEWER_PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Database viewer running on http://localhost:${PORT}`);
+const PORT = process.env.DB_VIEWER_PORT || process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+  console.log(`Database viewer running on http://${HOST}:${PORT}`);
+  console.log(`Healthcheck: http://${HOST}:${PORT}${HEALTHCHECK_PATH}`);
   console.log('\nEnvironment variables expected:');
   Object.entries(envInfo).forEach(([db, vars]) => {
     console.log(`${db}: ${vars}`);
